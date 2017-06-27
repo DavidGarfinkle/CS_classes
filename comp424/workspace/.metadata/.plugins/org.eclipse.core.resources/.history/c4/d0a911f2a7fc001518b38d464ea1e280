@@ -1,0 +1,67 @@
+package student_player.mytools;
+
+import hus.*;
+import java.util.ArrayList;
+
+public class Node {
+	
+	int value;
+	HusBoardState state;
+	Node parent;
+	ArrayList<HusMove> moves;
+	ArrayList<Node> children;
+	
+	public Node(HusBoardState board_state){
+		state = board_state;
+		moves = new ArrayList<HusMove>();
+		children = new ArrayList<Node>();
+	}
+	
+	public Node(int eval, HusBoardState board_state)
+	{
+		value = eval;
+		state = board_state;
+	}
+	
+	public Node(int eval, HusBoardState board_state, ArrayList<HusMove> legal_moves)
+	{
+		value = eval;
+		state = board_state;
+		moves = legal_moves;
+	}
+	public void addChild(Node child){
+		this.children.add(child);
+		child.setParent(this);
+	}
+	public void setParent(Node n){
+		this.parent = n;
+	}
+	public void setValue(int n){
+		this.value = n;
+	}
+	public void setBoard(HusBoardState b){
+		this.state = b;
+	}
+	public void setChildren(ArrayList<Node> l){
+		this.children = l;
+	}
+	public void setMoves(ArrayList<HusMove> m){
+		this.moves = m; 
+	}
+	public int getValue(){
+		return value;
+	}
+	public HusBoardState getState(){
+		return state;
+	}
+	public Node getParent(){
+		return parent;
+	}
+	public ArrayList<Node> getChildren(){
+		return this.children;
+	}
+	public ArrayList<HusMove> getMoves(){
+		return moves;
+	}
+	
+}

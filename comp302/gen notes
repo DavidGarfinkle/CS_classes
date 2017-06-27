@@ -1,0 +1,50 @@
+September 9th 2014
+
+Factorial Function
+(* fact: int -> int *)
+let rec fact n =
+	if n=0 then 1
+	else n*fact(n-1)
+(* OCaml does not need type to be defined but only has static typing *)
+(* When determining type, OCaml knows 
+	- Comparisons must be of the same type
+	- Branches must be the same type; 1st branch inputs int and outputs int, then 2nd branch must do the same)
+	-> Therefore, OCaml determines that n must be of type int
+*)
+
+exception UnImplemented
+exception Domain
+let rec fact n =
+	if n<0 then raise Domain
+	else (* run fact as above *)
+(* The problem here is that the n<0 condition is checked every time. This is uncessary... *)
+
+
+Defining Local Functions
+let fact n =
+	let rec fact' n = (* This is the local function *)
+		if n = 0 then 1
+		else n*fact'(n-1)
+in 
+	if n<0 then raise Domain
+	else fact' n
+(* After this line, fact' is not defined. Only fact. *)
+
+
+Tail-Recursive Programs
+(* fact_tr: int -> int -> int *)
+		   input accumulator output
+let rec fact_tr n acc =
+	if n=0 then acc (*return the result*)
+	else fact_tr (n-1) (n*acc) (*accumulate the result*)
+let fact n = fact_tr n 1
+
+
+Pattern Matching
+(* allows you to inspect values of a given type *)
+
+let rec fact n = match n with
+	|0 -> 1
+	|n -> n*fact(n-1)
+
+	

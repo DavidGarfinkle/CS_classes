@@ -1,0 +1,25 @@
+# Server version 0.08 running on cs-22.CS.McGill.CA:8123
+# Game ID: 1
+# Board class: hus.HusBoard
+# Timeout: 2000
+# First Move Timeout: 30000
+# Date: Thu Apr 07 04:20:47 EDT 2016
+# Player 1: Player-0, 'Human', running on cs-22.CS.McGill.CA
+# Player 2: Player-1, 'Human', running on cs-22.CS.McGill.CA
+START Player-0 Human
+START Player-1 Human
+PIT 0 6
+PIT 1 6
+PIT 0 19
+PIT 1 18
+PIT 0 21
+PIT 1 16
+PIT 0 15
+PIT 1 5
+PIT 0 18
+PIT 1 23
+PIT 0 13
+PIT 1 29
+PIT 0 2
+PIT 1 24
+PIT 0 25

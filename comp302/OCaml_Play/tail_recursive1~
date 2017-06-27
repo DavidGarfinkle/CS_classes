@@ -1,0 +1,20 @@
+let rec append l k = match l with
+|[] -> k
+|h::t -> h::(append t k)
+;;
+(*
+let append' l k acc = match l with
+|[] -> 
+|h::t -> append' t k h::acc
+*)
+let rec add l = match l with
+|[] -> 0
+|h::t -> h + add t
+;;
+
+let add_tr l  =
+    let rec add' l acc  =  match l with
+    	|[] -> acc
+	|h::t -> add' t h+acc
+	in add' l 0
+;;

@@ -1,0 +1,398 @@
+package student_player;
+
+import hus.HusBoardState;
+
+import hus.HusPlayer;
+import hus.HusMove;
+import hus.HusMove.MoveType;
+
+import java.lang.Math;
+import java.util.*;
+
+import student_player.mytools.*;
+
+
+/** A Hus player submitted by a student. */
+public class StudentPlayer extends HusPlayer {
+	
+	HusTimer timeout = new HusTimer();
+	
+	/** You must modify this constructor to return your student number.
+     * This is important, because this is what the code that runs the
+     * competition uses to associate you with your agent.
+     * The constructor should do nothing else. */
+    public StudentPlayer() { super("260515841"); }
+    
+    /* This will count the number of seeds that player p owns 
+     * p should be 0 or 1
+     * board_state is the board configuration you want to count seeds for
+     */
+    public int evaluation_function(HusBoardState board_state)
+    {
+    	int players_seeds = 0;
+    	int opponent_seeds = 0;
+    	Random rand = new Random();
+    	int random_noise = rand.nextInt(1);
+
+    	int pits[][] = board_state.getPits();
+    	for (int i=0; i<pits[player_id].length; i++){
+    		players_seeds += pits[player_id][i];
+    		opponent_seeds =+ pits[opponent_id][i];
+    	}
+    	return players_seeds + random_noise;
+    	
+    }
+    
+    public double proportion(HusBoardState board_state)
+    {
+    	double players_seeds = 0;
+    	double opponent_seeds = 0;
+
+    	int pits[][] = board_state.getPits();
+    	for (int i=0; i<pits[player_id].length; i++){
+    		players_seeds += pits[player_id][i];
+    		opponent_seeds += pits[opponent_id][i];
+    	}
+    	return players_seeds/(opponent_seeds + players_seeds);	
+    }
+    public int MiniMax(ArrayList<HusMove> moves, HusBoardState board_state, int depth, int alpha, int beta){
+        System.out.println("TOP LEVEL MINIMAX on move list of size " + moves.size());
+    	// Check if we have time to continue
+    	if (timeout.outOfTime()) return 0;
+    	    	
+    	// At the leaf nodes, run the evaluation function
+    	if (depth == 0){
+    		return evaluation_function(board_state);
+    	}
+    	
+    	// Our turn
+    	if (board_state.getTurnPlayer() == player_id){
+    		int best = Integer.MIN_VALUE;
+    		
+    		//if we don't have any legal moves left, we've lost the game. avoid this board state!
+    		if (moves.size() == 0)
+    			return best;
+    		for (int i=0; i<moves.size(); i++){
+    			HusMove legal_move = moves.get(i);
+                HusBoardState new_board_state = (HusBoardState) board_state.clone();
+                boolean finite_move = new_board_state.move(legal_move);
+                
+                //Check for infinite moves
+                if (!finite_move) continue;
+                
+                //Recurse on this node
+                int max_response = MiniMax(new_board_state, depth - 1, best, beta);
+                
+    			System.out.println(""
+    					+ "Completed deep search of move " + i
+    					+ " pit " + legal_move.getPit()
+    			);
+    			
+                // If we're out of time, get out of the recursion stack ASAP 
+                if (timeout.outOfTime()) return 0;
+                
+                // Keep track of the max value for this depth
+    			if (max_response >= best) {
+    				best = max_response;
+        			timeout.setFailSafe(legal_move);
+    			}
+    			// If our response to this move is better than our best responses to other moves our opponent could do, stop looking
+    			// The opponent won't choose this board state.
+    			if (max_response > beta) break;
+    		}
+    		return best;
+    	}
+    	
+    	// Opponent turn: it's just like our turn but the score is being minimized.
+    	else{
+    		int best = Integer.MAX_VALUE;    		
+    		if (moves.size() == 0)
+    			return best;
+    		for (HusMove legal_move : moves){
+                HusBoardState new_board_state = (HusBoardState) board_state.clone();
+                new_board_state.move(legal_move);
+                int min_response = MiniMax(new_board_state, depth - 1, alpha, best);
+                if (timeout.outOfTime()) return 0;
+                if (min_response <= best) best = min_response;
+    			if (min_response < alpha) break;
+    		}
+    		return best;
+    	}
+    }
+    
+    public int MiniMax(HusBoardState board_state, int depth, int alpha, int beta){
+       
+    	// Check if we have time to continue
+    	if (timeout.outOfTime()) return 0;
+    	
+    	// Get a list of legal moves for the current players' turn
+    	ArrayList<HusMove> moves = board_state.getLegalMoves();
+    	
+    	// At the leaf nodes, run the evaluation function
+    	if (depth == 0){
+    		return evaluation_function(board_state);
+    	}
+    	
+    	// Our turn
+    	if (board_state.getTurnPlayer() == player_id){
+    		int best = Integer.MIN_VALUE;
+    		
+    		//if we don't have any legal moves left, we've lost the game. avoid this board state!
+    		if (moves.size() == 0)
+    			return best;
+    		for (HusMove legal_move : moves){
+                HusBoardState new_board_state = (HusBoardState) board_state.clone();
+                boolean finite_move = new_board_state.move(legal_move);
+                
+                //Check for infinite moves
+                if (!finite_move) continue;
+                
+                //Recurse on this node
+                int max_response = MiniMax(new_board_state, depth - 1, best, beta);
+                
+                // If we're out of time, get out of the recursion stack ASAP 
+                if (timeout.outOfTime()) return 0;
+                
+                // Keep track of the max value for this depth
+    			if (max_response >= best) best = max_response;
+    			// If our response to this move is better than our best responses to other moves our opponent could do, stop looking
+    			// The opponent won't choose this board state.
+    			if (max_response > beta) break;
+    		}
+    		return best;
+    	}
+    	
+    	// Opponent turn: it's just like our turn but the score is being minimized.
+    	else{
+    		int best = Integer.MAX_VALUE;    		
+    		if (moves.size() == 0)
+    			return best;
+    		for (HusMove legal_move : moves){
+                HusBoardState new_board_state = (HusBoardState) board_state.clone();
+                new_board_state.move(legal_move);
+                int min_response = MiniMax(new_board_state, depth - 1, alpha, best);
+                if (timeout.outOfTime()) return 0;
+                if (min_response <= best) best = min_response;
+    			if (min_response < alpha) break;
+    		}
+    		return best;
+    	}
+    }
+
+    /** This is the primary method that you need to implement.
+     * The ``board_state`` object contains the current state of the game,
+     * which your agent can use to make decisions. See the class hus.RandomHusPlayer
+     * for another example agent. */
+    public HusMove chooseMove(HusBoardState board_state)
+    {
+    	timeout.resetTimer();
+    	
+    	//If it's our first move
+    	if (board_state.getTurnNumber() == 0){
+    		return (new HusMove("PIT " + player_id + " 22"));
+    	}
+
+    	// Find board_state evaluation
+    	int best = evaluation_function(board_state);
+    	// Find current seed proportion
+    	double p = proportion(board_state);
+
+    	// Get a list of legal moves for the current players' turn
+    	ArrayList<HusMove> moves = board_state.getLegalMoves();
+    	// The first legal move is our default return
+    	HusMove max_move = moves.get(0);
+    	timeout.setFailSafe(max_move);
+    	
+    	// Initialize
+    	int depth=2;
+    	HusBoardState max_board = board_state;
+    	Map<Integer, ArrayList<HusMove>> best_moves = new HashMap<Integer, ArrayList<HusMove>>();
+    	ArrayList<Integer> moves_values = new ArrayList<Integer>();
+
+    	
+    	// DETERMINE INITIAL DEPTH SEARCH
+//    	System.out.println("\nInitial Proportion: " + p);
+    	double increment = 0.20;
+    	while (Math.abs(p - 0.5) > (increment/2)){
+    		depth += 2;
+    		if (p < (0.5 - increment/2)) p += increment;
+    		if (p > (0.5 + increment/2)) p -= increment;
+    	}
+//    	System.out.println("Adjusted start depth: " + depth);
+ 
+    	// PART 1: TOP-LEVEL SHALLOW SEARCH
+    	//
+    	for (HusMove legal_move : moves) {
+    		// Generate the new board for this move
+            HusBoardState cloned_board_state = (HusBoardState) board_state.clone();
+
+            //Check if this move is infinite
+            boolean finite_move = cloned_board_state.move(legal_move);
+            if (!finite_move) continue;
+            
+            //Check the minimax potential of this move
+            int min_max = MiniMax(cloned_board_state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    		// If we're out of time, ignore minimax result and return the best move we have so far!
+            if (timeout.outOfTime()) {
+    			Runtime runtime = Runtime.getRuntime();
+/*    	    	System.out.println(""
+    	    			+ "\n Turn " + board_state.getTurnNumber()
+    	    			+ "\n Previous Seeds: " + evaluation_function(board_state)
+    	    			+ "\n Time left: " + timeout.getTimeLeft()
+    	    			+ "\n Space left: " + runtime.freeMemory()/1024
+    	    			+ "\n MiniMax Depth reached: " + depth
+    	    			+ "\n New Seeds: " + evaluation_function(max_board)
+    	    			+ "\n Proportion: " + proportion(max_board)
+    	    	);
+  */
+    			return timeout.getFailSafe();
+    		}
+            // Add the minimax potential to the list if it's not already there
+            if (!moves_values.contains(min_max)) moves_values.add(min_max);
+            // Hash this move to this list of moves which share this minimax potential as key
+            if (best_moves.containsKey(min_max)){
+            	best_moves.get(min_max).add(legal_move);
+            }
+            else {
+            	best_moves.put(min_max, new ArrayList<HusMove>());
+            	best_moves.get(min_max).add(legal_move);
+            }
+            
+            // Check if this move is better than what we already have
+            if (min_max >= best) {
+    			max_move = legal_move;
+    			timeout.setFailSafe(max_move);
+    			best = min_max;
+    			max_board = cloned_board_state;
+    		}
+    	}
+/*    	System.out.println(""
+    			+ "Completed Shallow Search. "
+    			+ "Best move is pit " + max_move.getPit()
+    			+ " with value " + best
+    			+ "\n ----------------- ");
+*/
+    	
+    	// PART 2: SORTED MOVES DEEP SEARCH
+    	depth += 4;
+    	//Sort our list of moves based on shallow minimax evaluations
+    	Collections.sort(moves_values, Collections.reverseOrder()); // sort minimax evaluations
+    	ArrayList<HusMove> sorted_moves = new ArrayList<HusMove>();
+    	int j=0;
+    	for (int i=0; i<moves_values.size(); i++){
+    		for (HusMove m : best_moves.get(moves_values.get(i))){
+    			sorted_moves.add(m);
+    			j++;
+    			if (j>3) break;
+    		}
+    		if (j>3) break;
+    	}
+    	while (!timeout.outOfTime()){
+    		System.out.println("DEEP SEARCH at depth " + depth);
+            int min_max = MiniMax(sorted_moves, board_state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            if (timeout.outOfTime()) {		
+            	Runtime runtime = Runtime.getRuntime();
+/*            	System.out.println(""
+        			+ "\n Turn " + board_state.getTurnNumber() + " Summary"
+        			+ "\n Previous Seeds: " + evaluation_function(board_state)
+        			+ "\n Time left: " + timeout.getTimeLeft()
+        			+ "\n Space left: " + runtime.freeMemory()/1024
+        			+ "\n MiniMax Depth reached: " + depth
+        			+ "\n New Seeds: " + evaluation_function(max_board)
+        			+ "\n Proportion: " + proportion(max_board)
+        			+ "\n BEST MOVE: pit " + timeout.getFailSafe().getPit()
+        	);
+*/
+            	return timeout.getFailSafe();
+            }
+            depth += 2;
+    	}
+    	return timeout.getFailSafe();
+
+    }
+}
+
+/*
+ *   	//Set the failSafe to the new best move only if we've fully searched a particular depth
+		timeout.setFailSafe(max_move);
+    	System.out.println("Completed Depth: " + depth);
+    	depth++;
+*/
+
+
+/*
+    	// PART 2: SELECTIVE DEEP-SEARCH
+    	//
+    	// After we've looked at all of the top-level moves, sort the value list based on minimax potential
+    	if (depth == 2) depth = 6;
+    	else depth += 2;
+    	
+    	// Search these "promising" moves deeper, and keep track of time
+    	while (!timeout.outOfTime())
+    	{
+        	Collections.sort(moves_values, Collections.reverseOrder());
+    		System.out.println("Deep Searching at depth: " + depth);
+    		for(int i=0; i<(moves_values.size())/2; i++){
+    			
+    			// Given current eval#, get the corresponding move
+    			// remove it from hashed list to avoid collision with other board states with same eval#
+    			HusMove prospective_move = best_moves.get(moves_values.get(i)).remove(0);
+    			// if there are no more moves which produce boards with this eval#, remove eval# from list
+    			if (best_moves.get(moves_values.get(i)).isEmpty()) moves_values.remove(i);
+    			
+    			// Generate the new board
+    			HusBoardState cloned_board_state = (HusBoardState) board_state.clone();
+    			cloned_board_state.move(prospective_move);
+    			
+    			// Search this move deeper than before. the move we thought was the best might be bad now!
+    			int min_max = MiniMax(cloned_board_state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    			// If this is the move that we previously believed to be the best, update this standard
+    			if (i == 0) best = min_max;
+    			
+    			// If we're out of time, return the best thing we've seen!
+                if (timeout.outOfTime()) {
+        			Runtime runtime = Runtime.getRuntime();
+        	    	System.out.println(""
+        	    			+ "\n Turn " + board_state.getTurnNumber() + " Summary"
+        	    			+ "\n Previous Seeds: " + evaluation_function(board_state)
+        	    			+ "\n Time left: " + timeout.getTimeLeft()
+        	    			+ "\n Space left: " + runtime.freeMemory()/1024
+        	    			+ "\n MiniMax Depth reached: " + depth
+        	    			+ "\n New Seeds: " + evaluation_function(max_board)
+        	    			+ "\n Proportion: " + proportion(max_board)
+        	    			+ "\n BEST MOVE: move " + i + " pit " + timeout.getFailSafe().getPit()
+        	    	);
+        			return timeout.getFailSafe();
+        		}
+    			System.out.println(""
+    					+ "Completed deep search of move " + i
+    					+ " pit " + prospective_move.getPit()
+    					+ ". Previous min_max: " + moves_values.get(i)
+    					+ " New min_max: " + min_max
+    			);
+    			
+                // Add the minimax potential to the list if it's not already there
+                if (!moves_values.contains(min_max)) moves_values.add(min_max);
+    			// Hash this move to its updated (more accurate) min_max value
+                if (best_moves.containsKey(min_max)){
+                	best_moves.get(min_max).add(prospective_move);
+                }
+                else {
+                	best_moves.put(min_max, new ArrayList<HusMove>());
+                	best_moves.get(min_max).add(prospective_move);
+                }
+                
+                // If we're not out of time, check if this move is better than what we already have
+                if (min_max >= best) {
+                	System.out.println(" --- Move " + i + " is better !!!");
+        			max_move = prospective_move;
+        			timeout.setFailSafe(max_move);
+        			best = min_max;
+        			max_board = cloned_board_state;
+        		}
+    		}
+    		// Look deeper
+    		depth += 2;
+      	}
+    	return timeout.getFailSafe();
+*/

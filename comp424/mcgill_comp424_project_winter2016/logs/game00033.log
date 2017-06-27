@@ -1,0 +1,12 @@
+# Server version 0.08 running on cs-21.CS.McGill.CA:8123
+# Game ID: 33
+# Board class: hus.HusBoard
+# Timeout: 6000000
+# First Move Timeout: 60000000
+# Date: Thu Apr 07 19:06:15 EDT 2016
+# Player 1: Player-0, '260515841', running on localhost
+# Player 2: Player-1, '999999999', running on localhost
+START Player-0 260515841
+START Player-1 999999999
+PIT 0 6
+PIT 1 6

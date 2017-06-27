@@ -1,0 +1,45 @@
+type 'a list =
+	|Nil
+	|Cons of 'a*list
+
+type 'a btree = 
+	|Leaf of 'a 
+	|Node of 'a of 'a btree * 'a 'a btree
+
+type 'n tree =
+	|Leaf of 'a
+	|Node of 'a * 'a ntree list
+
+Option Types
+type 'a option = None | Some of 'a
+
+Defining Local Functions
+let fact n =
+	let rec fact' n = (* This is the local function *)
+		if n = 0 then 1
+		else n*fact'(n-1)
+in 
+	if n<0 then raise Domain
+	else fact' n
+(* After this line, fact' is not defined. Only fact. *)
+
+Tail-Recursive Programs
+(* fact_tr: int -> int -> int *)
+		   input accumulator output
+let rec fact_tr n acc =
+	if n=0 then acc (*return the result*)
+	else fact_tr (n-1) (n*acc) (*accumulate the result*)
+let fact n = fact_tr n 1
+
+Depth of tree
+let rec depth t = match t with
+	|Leaf -> 0
+	|Node(l,_,r) -> 1 + max (depth l) (depth r)
+
+
+
+Induction: e->e', e->*e, e downward-arrow v, n-bar. if n is a mathematical integer, then n bar is its representation as an OCaml value
+
+List fold right list fold left.... :(
+function types are right associative - 'a->'b->'c is the same as 'a->('b->'c) ---- i think????
+function applications are left associative f a b is the same as (f a) b

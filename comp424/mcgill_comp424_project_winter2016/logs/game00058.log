@@ -1,0 +1,37 @@
+# Server version 0.08 running on cs-21.CS.McGill.CA:8123
+# Game ID: 58
+# Board class: hus.HusBoard
+# Timeout: 2000
+# First Move Timeout: 30000
+# Date: Thu Apr 07 21:18:54 EDT 2016
+# Player 1: Player-0, '260515841', running on localhost
+# Player 2: Player-1, '999999999', running on localhost
+START Player-0 260515841
+START Player-1 999999999
+PIT 0 6
+PIT 1 6
+PIT 0 22
+PIT 1 18
+PIT 0 18
+PIT 1 16
+PIT 0 16
+PIT 1 1
+PIT 0 24
+PIT 1 24
+PIT 0 26
+PIT 1 7
+PIT 0 31
+PIT 1 2
+PIT 0 15
+PIT 1 0
+PIT 0 30
+PIT 1 20
+PIT 0 31
+PIT 1 15
+PIT 0 29
+PIT 1 17
+PIT 0 27
+PIT 1 18
+PIT 0 31
+GAMEOVER WINNER 0
+# Game ended: Thu Apr 07 21:19:19 EDT 2016

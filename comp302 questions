@@ -1,0 +1,27 @@
+Question 1:
+let scope n = match n with
+	|0 -> None
+	|n -> Some n
+What is going on here? Pattern matching n has different scope?
+
+Question 2:
+let match l = match l with
+	|Empty -> None
+	|h::t -> Some h
+What is happening here with h::t? Are we instantiating variables? :(
+
+Question 3:
+let help x = 
+	let r = horribleComp x in
+		fun y -> r+y
+
+map (help 5) C2
+let r = horribleComp(5)
+	in fun y -> r*y
+-> map (fun y -> 999 + y) C2
+
+(help 5) vs (fun y -> help 5 + y) <= this is bad!
+
+What is going on here?! is the first one so that horrible comp x gets computed, so that fun help x takes 5 hours to define for every x but after that is short for all of the values y you can pass to your newly defined function?
+
+

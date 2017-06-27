@@ -1,0 +1,159 @@
+package student_player;
+
+import hus.HusBoardState;
+
+import hus.HusPlayer;
+import hus.HusMove;
+import hus.HusMove.MoveType;
+
+import java.util.*;
+
+import student_player.mytools.*;
+
+
+/** A Hus player submitted by a student. */
+public class StudentTest extends HusPlayer {
+	
+	long TIME_LIMIT = 2000000000;
+	HusTimer timeout = new HusTimer(TIME_LIMIT);
+	
+	/** You must modify this constructor to return your student number.
+     * This is important, because this is what the code that runs the
+     * competition uses to associate you with your agent.
+     * The constructor should do nothing else. */
+    public StudentTest() { super("260515841"); }
+    
+    /* This will count the number of seeds that player p owns 
+     * p should be 0 or 1
+     * board_state is the board configuration you want to count seeds for
+     */
+    public int evaluation_function(HusBoardState board_state)
+    {
+    	int players_seeds = 0;
+    	Random rand = new Random();
+    	int random_noise = rand.nextInt(1);
+
+    	int pits[][] = board_state.getPits();
+    	for (int i=0; i<pits[player_id].length; i++){
+    		players_seeds += pits[player_id][i];
+    	}
+    	return players_seeds + random_noise;
+    	
+    }
+    
+    public int MiniMax(HusBoardState board_state, int depth, int alpha, int beta){
+       
+    	// Check if we have time to continue
+    	if (timeout.outOfTime()) return 0;
+    	
+    	// Get a list of legal moves for the current players' turn
+    	ArrayList<HusMove> moves = board_state.getLegalMoves();
+    	
+    	// At the leaf nodes, run the evaluation function
+    	if (depth == 0){
+    		return evaluation_function(board_state);
+    	}
+    	
+    	// Our turn
+    	if (board_state.getTurnPlayer() == player_id){
+    		int best = Integer.MIN_VALUE;
+    		
+    		//if we don't have any legal moves left, we've lost the game. avoid this board state!
+    		if (moves.size() == 0)
+    			return best;
+    		for (HusMove legal_move : moves){
+                HusBoardState new_board_state = (HusBoardState) board_state.clone();
+                boolean finite_move = new_board_state.move(legal_move);
+                
+                //Check for infinite moves
+                if (!finite_move) continue;
+                
+                //Recurse on this node
+                int max_response = MiniMax(new_board_state, depth - 1, best, beta);
+                
+                // If we're out of time, get out of the recursion stack ASAP 
+                if (timeout.outOfTime()) return 0;
+                
+                // Keep track of the max value for this depth
+    			if (max_response >= best) best = max_response;
+    			// If our response to this move is better than our best responses to other moves our opponent could do, stop looking
+    			// The opponent won't choose this board state.
+    			//if (max_response > beta) break;
+    		}
+    		return best;
+    	}
+    	
+    	// Opponent turn: it's just like our turn but the score is being minimized.
+    	else{
+    		int best = Integer.MAX_VALUE;    		
+    		if (moves.size() == 0)
+    			return best;
+    		for (HusMove legal_move : moves){
+                HusBoardState new_board_state = (HusBoardState) board_state.clone();
+                new_board_state.move(legal_move);
+                int min_response = MiniMax(new_board_state, depth - 1, alpha, best);
+                if (timeout.outOfTime()) return 0;
+                if (min_response <= best) best = min_response;
+    			//if (min_response < alpha) break;
+    		}
+    		return best;
+    	}
+    }
+
+    /** This is the primary method that you need to implement.
+     * The ``board_state`` object contains the current state of the game,
+     * which your agent can use to make decisions. See the class hus.RandomHusPlayer
+     * for another example agent. */
+    public HusMove chooseMove(HusBoardState board_state)
+    {
+    	timeout.resetTimer();
+    	
+    	//If it's our first move
+    	if (board_state.getTurnNumber() == 0){
+    		return (new HusMove("PIT " + player_id + " 6"));
+    	}
+
+    	// Get a list of legal moves for the current players' turn
+    	ArrayList<HusMove> moves = board_state.getLegalMoves();
+    	// Initialize current board_state value
+    	int best = evaluation_function(board_state);
+    	// Initialize
+    	int depth=4;
+    	
+    	// A random legal move is our default return
+    	HusMove max_move = (HusMove) board_state.getRandomMove();
+    	timeout.setFailSafe(max_move);
+
+	
+    	while (!timeout.outOfTime())
+    	{
+	    	for (HusMove legal_move : moves) {
+	    		// Generate the new board for this move
+	            HusBoardState cloned_board_state = (HusBoardState) board_state.clone();
+
+	            //Check if this move is infinite
+	            boolean finite_move = cloned_board_state.move(legal_move);
+	            if (!finite_move) continue;
+	            
+	            int min_max = MiniMax(cloned_board_state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+	    		if (timeout.outOfTime()) {
+	    			Runtime runtime = Runtime.getRuntime();
+	    	    	System.out.println(""
+	    	    			+ "\n Turn " + board_state.getTurnNumber()
+	    	    			+ "\n Time left: " + timeout.getTimeLeft()
+	    	    			+ "\n Space left: " + runtime.freeMemory()/1024
+	    	    			+ "\n MiniMax Depth reached: " + depth
+	    	    	);
+	    			return timeout.getFailSafe();
+	    		}
+	            if (min_max >= best) {
+	    			max_move = legal_move;
+	    			timeout.setFailSafe(max_move);
+	    			best = min_max;
+	    		}
+	    	}
+	    	depth++;
+    	}
+    	return timeout.getFailSafe();
+    }
+}

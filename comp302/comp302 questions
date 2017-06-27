@@ -1,0 +1,6 @@
+Question 1:
+let scope n = match n with
+	|0 -> None
+	|n -> Some n
+What is going on here? Pattern matching n has different scope?
+
